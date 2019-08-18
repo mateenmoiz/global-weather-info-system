@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="new-test-suite.xml" />
+	<munit:test name="get-weather-test-suiteTest" description="MUnit Test" doc:id="6590e984-2faa-42e7-9b0f-8eda7356beb6" >
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="34db266a-face-4801-b2d2-b09f809391b4" processor="mule:flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute attributeName="name" whereValue="get_weather_info" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#['Testing']" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy" doc:id="f2afd649-19d1-449a-9be4-2f57cf1bd119" processor="SubFlow_generate_output_weather_info">
+				<munit-tools:before-call >
+					<logger level="INFO" doc:name="Logger" doc:id="6b4f84bf-ac16-47bb-9555-461ba6d84f5a" />
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<logger level="INFO" doc:name="Logger" doc:id="90c58807-8054-462b-b6dc-50b768c63a0a" />
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="ee9a1c64-87ed-4ce3-a5b5-0287906ce399" >
+				<munit:attributes value="#[{'queryParams': {'countryName':'Australia'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="weather_infoSub_Flow" doc:id="70936546-7f0a-4363-ae62-08c9b6d3fabd" name="weather_infoSub_Flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="5ac488d8-b638-41c8-9274-b19984f408fa" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-weather-test-suite-get:\globalWeather\getWeather:globalweather-configTest" description="Test" doc:id="bf482db5-8d18-4ef2-ba30-cf2251535d33" >
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="f4de2194-4fcf-48fa-b69a-e455b7978d33" >
+				<munit:attributes value="#[{'queryParams': {'countryName':'Australia' , 'cityName':'Melbourne'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="get:\globalWeather\getWeather:globalweather-config" doc:id="904ff874-b6ce-47c9-adb6-de5b2a20dbf5" name="get:\globalWeather\getWeather:globalweather-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="4209a519-c43c-4a63-b0be-b6fc444c767e" expression="#[payload]" is='#[MunitTools::notNullValue()]'/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

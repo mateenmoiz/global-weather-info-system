@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	<sub-flow name="SubFlow_Sanitize_SOAP_Output" doc:id="ec3ff448-c45d-49be-bf68-5b77f095481f">
+		<logger level="INFO" doc:name="Logger" doc:id="68154586-2a45-46d7-8259-a20d368f2e73" />
+		<ee:transform doc:name="Transform Message" doc:id="1cbeac6e-aa25-4724-a47a-e598ee7dd975">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload as String replace "&lt;" with "<") 
+	 replace "<![CDATA[" with "" 
+	 replace "]>" with ""
+	 replace "]" with ""
+	 replace "&gt;" with ">"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="223a7b6c-754a-4cb3-b47c-11358906d20e" mimeType="application/xml" />
+	</sub-flow>
+	
+	
+	
+	</mule>

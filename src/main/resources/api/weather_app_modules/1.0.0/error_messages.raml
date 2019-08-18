@@ -1,0 +1,41 @@
+#%RAML 1.0 Trait
+
+usage: It is used to send responses in error condition
+description: All possible error condidtions are listed
+
+responses:
+    400:
+      body:
+        application/json:
+          type: Error
+          example: !include ../../examples/error_msg_400.json
+    404:
+      body:
+        application/json:
+          type: Error
+          example: !include ../../examples/error_msg_404.json
+    405:
+      body:
+        application/json:
+          type: Error
+          example: !include ../../examples/error_msg_405.json
+    406:
+      body:
+        application/json:
+          type: Error
+          example: !include ../../examples/error_msg_406.json
+    415:
+      body:
+        application/json:
+          type: Error
+          example: !include ../../examples/error_msg_415.json
+    422:
+      body:
+        application/json:
+          type: Error
+          example: !include ../../examples/error_msg_422.json      
+    500:
+      body:
+        application/json:
+          type: Error
+          example: !include ../../examples/error_msg_500.json      

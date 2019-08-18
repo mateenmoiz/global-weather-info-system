@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	
+	<sub-flow name="cities_by_countrySub_Flow" doc:id="fe077c90-a6a7-4836-83d3-386b2fc4b03b" >
+		<try doc:name="Try" doc:id="47b31f13-53bb-4879-b393-cd889ad395f1" >
+			<validation:matches-regex doc:name="Validate Input Param" doc:id="41092209-a486-4458-8c15-a52644b5140b" value="#[vars.queryParamCountry]" regex="^[a-zA-Z]+$" caseSensitive="false" message="Only letters are allowed"/>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7c19b1ac-632f-45f4-9095-581f45f35412" type="ANY">
+					<flow-ref doc:name="Flow Reference" doc:id="2b526875-4043-4677-a538-42285fd4a3c3" name="validation_responseFlow"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<flow-ref doc:name="flow_get_cities_by_country" doc:id="dc64db8d-06ef-4144-8f6b-2733f937027c" name="flow_get_cities_by_country"/>
+	</sub-flow>
+	<flow name="flow_get_cities_by_country" doc:id="bd19d5e5-2939-4170-8b2e-4c1ddb44afd3" >
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="7ab4f035-d026-44f4-b874-527c30a40ade">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://www.webserviceX.NET
+---
+ns0#GetCitiesByCountry: {
+		CountryName: vars.queryParamCountry
+	}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="ERROR" doc:name="Logger" doc:id="67d9ee90-66ed-4993-a646-fa0ee29aff46" message="#[attributes.queryParams.countryName]"/>
+		<until-successful maxRetries="5" doc:name="Re attempt 5 times" doc:id="73be667a-34c8-4fd0-a05d-873438530975" >
+			<wsc:consume doc:name="Consume" doc:id="b5170033-1a9d-4e13-8f14-322f89c55d26" config-ref="Web_Service_Consumer_Config" operation="GetCitiesByCountry"/>
+		</until-successful>
+		<logger level="INFO" doc:name="Logger" doc:id="da84c430-d35d-4630-a0d4-a4586174f4e5" />
+		<choice doc:name="Choice" doc:id="f32554fe-c2d3-40dc-9c87-0caf10edec70" >
+			<when expression="#[payload=='']">
+				<set-variable value="Cities Data is not available" doc:name="Set Variable" doc:id="92cf29cf-ec30-469b-b015-b31f4b189070" variableName="errorMsg"/>
+				<logger level="ERROR" doc:name="Logger" doc:id="ba57c70c-d0e9-4781-a70a-ca25c1947860" message="Soap service returned empty response"/>
+				<ee:transform doc:name="Transform Message" doc:id="e0cc82c4-4187-4654-9dc7-4a69a6b8f2cc" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	message: "no data available for the request"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="subflow_generate_output" doc:id="88fa5577-3cea-49ee-b542-14e68629d8fe" name="subflow_generate_output" />
+			</otherwise>
+		</choice>
+	
+</flow>
+	<sub-flow name="subflow_generate_output" doc:id="3cbd7dac-56ae-40b5-bc29-20e5d74a63bd">
+		<ee:transform doc:name="Transform Message" doc:id="0be0d483-aa73-4266-a465-281cbb4abf9c">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload.body.GetCitiesByCountryResponse]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="SubFlow_Sanitize_SOAP_Output" doc:id="fd5ee95a-d040-426e-9edf-d3dba15424e9" name="SubFlow_Sanitize_SOAP_Output" />
+		<logger level="INFO" doc:name="Logger" doc:id="f947e18a-2294-4bc7-8eb1-873f5c09d197" />
+		<ee:transform doc:name="Transform Message" doc:id="61361760-c479-4a14-ab4c-45dd4c90f2cf">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+{ 
+	cities: payload.NewDataSet.*Table.City
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+		
+	
+</mule>

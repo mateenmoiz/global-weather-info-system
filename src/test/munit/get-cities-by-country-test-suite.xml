@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="test-suite.xml" />
+	<munit:test name="get-cities-by-country-test-suiteTest" description="MUnit Test" doc:id="411caec2-d1d2-4385-8011-fe2c300b64ce" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="29ba53a7-8a15-468c-b923-0d0c06d6107b" processor="mule:flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute attributeName="name" whereValue="flow_get_cities_by_country" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#['Testing']"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy" doc:id="848bf35a-493c-4e00-9d1b-f20749c733ae" processor="subflow_generate_output">
+				<munit-tools:before-call >
+					<logger level="INFO" doc:name="Logger" doc:id="bb0020d2-3bca-4076-a187-7e5834f3ae74" />
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<logger level="INFO" doc:name="Logger" doc:id="aeb7c8d9-1f9d-4441-ad24-d917e143daa4" />
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="87ce603f-6631-449e-9e68-fd7ae5cccefe" >
+				<munit:attributes value="#[{'queryParams': {'countryName':'Australia'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow Reference" doc:id="e6eef0a0-5d6f-4b0d-92f9-47ea2e1c96bd" name="cities_by_countrySub_Flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="0e46758d-84b1-4e39-a7e2-ae451e4e06b3" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-cities-by-country-test-suite-get:\globalWeather\getCitiesByCountry:globalweather-configTest" description="Test" doc:id="545d5b22-baad-454e-896f-c324642eddc0" >
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="0fd4b267-ff77-4ec3-a715-e351a50654fe" >
+				<munit:attributes value="#[{'queryParams': {'countryName':'Australia'}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="get:\globalWeather\getCitiesByCountry:globalweather-config" doc:id="dd187778-47c5-48d6-9038-34a5a7dc2708" name="get:\globalWeather\getCitiesByCountry:globalweather-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="40cc0b29-769e-4a7e-bccc-73d36cbb7e16" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

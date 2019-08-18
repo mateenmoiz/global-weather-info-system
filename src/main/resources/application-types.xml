@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="input_city_by_country" format="xml">
+      <types:example format="xml" element="NewDataSet" location="GetCitiesByCountry.xml"/>
+    </types:type>
+    <types:type name="input_string" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#0be0d483-aa73-4266-a465-281cbb4abf9c">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="input_city_by_country"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#61361760-c479-4a14-ab4c-45dd4c90f2cf">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="input_city_by_country"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#1cbeac6e-aa25-4724-a47a-e598ee7dd975">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="input_string"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#6f4fdf44-1513-4fd3-90e0-c9d9e8313f96">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="input_string"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

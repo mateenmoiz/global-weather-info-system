@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="validation_responseFlow" doc:id="4e24243b-ebf3-4d50-9e90-3ba0694e8a32" >
+		<set-payload value="Invalid query Param" doc:name="Set Payload" doc:id="f2394ea7-06d9-4c90-82d6-cd17d4c0b39c" />
+		<logger level="INFO" doc:name="Logger" doc:id="81c16e19-c3a7-429d-905c-1aa9dc45660a" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="7f6ad812-10d5-41a8-9522-68a40e66445d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad request"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

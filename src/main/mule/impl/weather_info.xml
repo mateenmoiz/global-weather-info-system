@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
+	<sub-flow name="weather_infoSub_Flow" doc:id="4e6ca808-7c7d-46d7-b22d-1412183a08d5" >
+		<flow-ref doc:name="get_weather_info" doc:id="1b5408e3-1293-4cac-b1f7-6d5c2fb1c87c" name="get_weather_info"/>
+	</sub-flow>
+	<flow name="get_weather_info" doc:id="959609d3-9b6b-4b7f-b07e-9ee1453937e4" >
+		<logger level="INFO" doc:name="Logger" doc:id="4f860792-f97f-49b6-87db-41171d934452" message="In getWeather next ----- + #[vars.queryParamCity]" />
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="d633a96a-1f24-4e1c-9976-4a14c24e0c23">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://www.webserviceX.NET
+---
+{
+	ns0#GetWeather: {
+		ns0#CityName: vars.queryParamCity,
+		ns0#CountryName: vars.queryParamCountry
+}
+
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="09f66b2a-cac6-466c-9f97-ddaec5b0f409" message="#[payload]" />
+		<until-successful maxRetries="5" doc:name="Re attempt 5 times" doc:id="7988b5d3-30d3-4669-b443-2fdc3b75d7a6" >
+			<wsc:consume operation="GetWeather" doc:name="Consume" doc:id="ec82ae19-97b3-4efe-bb0b-d9c396daa9bc" config-ref="Web_Service_Consumer_Config"/>
+		</until-successful>
+		<logger level="INFO" doc:name="Logger" doc:id="e325f083-3fcb-4b55-a52c-851ececa144f" message="#[payload.body]" />
+		<choice doc:name="Choice" doc:id="e6eb316a-0e44-43b9-8da0-2eb75b348c5d" >
+			<when expression="#[payload=='']">
+				<set-variable value="Weather Data not available for the city" doc:name="Set Variable" doc:id="0b3082be-f784-45bd-9021-f284063713bb" variableName="errorMsg"/>
+				<logger level="ERROR" doc:name="Logger" doc:id="48d44ac9-86c3-4b24-86ac-536144cbdd43" message="Soap service returned empty response"/>
+				<ee:transform doc:name="Transform Message" doc:id="0faeaac2-21c7-4f5a-af2f-8821320301a8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "no data available for the request"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="SubFlow_generate_output_weather_info" doc:id="5218119e-9e47-4f01-accc-dd1a4d812f04" name="SubFlow_generate_output_weather_info" />
+			</otherwise>
+		</choice>
+	
+</flow>
+	<sub-flow name="SubFlow_generate_output_weather_info" doc:id="190a8509-860f-4e0d-ac7d-f2a3f84c6779">
+		<ee:transform doc:name="Transform Message" doc:id="6f4fdf44-1513-4fd3-90e0-c9d9e8313f96">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload.body.GetWeatherResponse]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="eaafbf62-1bf8-4050-abbf-5456d4256ebd" message='"---- without Tags ---- " + #[payload]' />
+		<flow-ref doc:name="SubFlow_Sanitize_SOAP_Output" doc:id="2fde55e3-24d3-4d32-b71b-5ef1f5df22b1" name="SubFlow_Sanitize_SOAP_Output"/>
+		<logger level="INFO" doc:name="Logger" doc:id="3e760cf4-a0a5-4de3-8d1e-de0531e1d07c" />
+		<ee:transform doc:name="Transform Message" doc:id="e2b2b954-53ec-4145-9678-b8f8e85c1dad">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	city: payload.NewDataSet.Location,
+	time: payload.NewDataSet.Time,
+	wind: payload.NewDataSet.Wind,
+	visibility: payload.NewDataSet.Visibility,
+	skyConditions: payload.NewDataSet.SkyConditions,
+	temperature: payload.NewDataSet.Temperature as String,
+	dewPoint: payload.NewDataSet.DewPoint,
+	relativeHumidity: payload.NewDataSet.RelativeHumidity as String,
+	weatherStatus: payload.NewDataSet.Status
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a8f19de2-3a57-422f-8dc9-c7be1bf0158f" message="#[payload]" />
+	</sub-flow>
+
+
+
+
+
+</mule>

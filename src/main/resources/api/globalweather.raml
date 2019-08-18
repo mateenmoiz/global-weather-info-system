@@ -1,0 +1,60 @@
+#%RAML 1.0
+version: v1.0
+baseUri: http://localhost:8081/api
+title: Global Weather Experience API
+
+traits:
+  errorResponses: !include /weather_app_modules/1.0.0/error_messages.raml
+
+types:
+  Error:
+    properties:
+      status: 
+        description: Http Status Error Code
+        type: string 
+      statusCode: 
+        description: Error Discription
+
+
+/globalWeather:
+  /getCitiesByCountry:
+   get:
+     displayName: Retrieve cities by countries
+     description: |
+      Lists all the cities of a particular country
+     queryParameters:
+        countryName:
+          displayName: Country Name
+          required: false
+          type: string
+     responses:
+          200:
+            body:
+              application/json:  
+                example: !include examples/cities_by_country.json
+
+     is: [errorResponses]
+          
+            
+  /getWeather:
+   get:
+     displayName: |
+      Retrieves weather by city and countries
+     description: |
+      List the weather by city and country
+     queryParameters:
+          cityName:
+            displayName: City Name
+            required: false
+            type: string
+          countryName:
+            displayName: Country Name
+            required: false
+            type: string
+     responses:
+          200:
+            body:
+              application/json:  
+                example: !include examples/weather_info_response.json
+
+     is: [errorResponses]           
